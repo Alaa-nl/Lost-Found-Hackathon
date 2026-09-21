@@ -1,112 +1,71 @@
-# Todoish — course sample
+# Lost & Found
 
-**Todoish** is a single-user todo sample for the course, not a production app.
+A small web app for a hotel reception: staff log items guests leave behind and
+mark them as claimed when the owner picks them up.
 
-Coding conventions for this repo live in [`AGENTS.md`](./AGENTS.md).
+Built on the Todoish course sample (Next.js App Router, React 19, Prisma 7 on
+SQLite, Tailwind 4, Storybook 10, Vitest, Playwright).
 
-## Stack
+## Features
 
-- [React 19](https://react.dev/) — UI library; `src/components/`
-- [Next.js](https://nextjs.org/) — App Router; `src/app/page.tsx`, `src/app/layout.tsx`
-- [Prisma](https://www.prisma.io/) — SQLite ORM; `prisma/schema.prisma`, `src/prisma/prismaClient.ts`
-- [Storybook](https://storybook.js.org/) — UI in isolation; `.storybook/`, colocated `*.stories.tsx`
-- [Atomic Design](https://atomicdesign.bradfrost.com/chapter-2/) — UI folder map; `src/components/{atoms,molecules,organisms,templates,pages}`
-- [Tailwind CSS](https://tailwindcss.com/) — utility classes; `src/app/globals.css`
-- [Vite](https://vite.dev/) — Storybook and Vitest toolchain, not the Next.js bundler; `.storybook/main.ts`, `vitest.config.ts`
-- [Vitest](https://vitest.dev/) — component/story/action tests; colocated `*.test.tsx`, `tests/actions/`
-- [Playwright](https://playwright.dev/) — e2e; `tests/e2e/`, `playwright.config.ts`
-- SQLite — local DB used by Prisma; `prisma/dev.db` is gitignored and created on migrate; `prisma/schema.prisma`
+- Add a found item: name, where it was found, optional room number and notes.
+- See all items as cards, newest first, with a status badge
+  (orange = Waiting, green = Claimed).
+- Mark an item claimed and undo it. The card shows the claim date.
+- Delete an item.
+- Filter by status (All / Waiting / Claimed) and search by name.
+- A counter at the top, for example "3 waiting, 1 claimed".
 
-## Setup
+## Requirements
 
-1. Install Node.js and npm. Clone this repo.
-2. `npm install`
-3. Copy `.env.example` to `.env` (do not commit `.env`)
-4. `npm run prisma:generate`
-5. `npm run prisma:migrate` (applies existing migrations; creates `prisma/dev.db`)
-6. `npm run dev` → [http://localhost:3000/](http://localhost:3000/)
+Node 24 (see `.nvmrc`). Prisma 7 does not support Node 23, and `better-sqlite3`
+is a native module that must be built against the Node version you run.
 
-## Scripts
-
-See `./package.json`
-Execute using `npm run [name of script]`
-
-- `dev` — Next.js app at http://localhost:3000/
-- `storybook` — Storybook UI on port 6006
-- `test` — Vitest (storybook, components, and actions projects)
-- `test:e2e` — Playwright e2e
-- `prisma:migrate` — apply existing migrations; creates `prisma/dev.db`
-- `prisma:generate` — generate the Prisma client
-
-## File structure
-
-```
-.
-├── src/
-│   ├── app/                         # routes (`page.tsx` is `/`)
-│   │   ├── page.tsx                 # `/` — loads todos, injects Server Actions
-│   │   ├── layout.tsx               # root layout and document metadata
-│   │   └── globals.css              # Tailwind entry
-│   ├── components/                  # atomic UI
-│   │   └── atoms/Button/Button.tsx  # canonical atom
-│   ├── actions/                     # Server Actions
-│   │   └── todo/createTodo/createTodo.ts
-│   ├── prisma/prismaClient.ts       # Prisma client used by actions
-│   └── generated/prisma/            # generated client; do not edit
-├── prisma/                          # schema and migrations
-├── .storybook/                      # Storybook config
-├── tests/
-│   ├── actions/                     # action tests (`prisma/test.db`)
-│   └── e2e/                         # Playwright (`prisma/dev.db`)
-├── specs/                           # SDD specs
-├── vitest.config.ts                 # Vitest projects (storybook, components, actions)
-├── playwright.config.ts             # Playwright e2e config
-└── AGENTS.md                        # conventions for this repo
+```bash
+nvm use
 ```
 
-To explore the codebase, start with `src\app\page.tsx`.
+## Getting started
 
-Review Prisma Schema in `prisma\schema.prisma`
+```bash
+npm install
+cp .env.example .env
+npm run prisma:generate
+npm run prisma:migrate
+npm run dev
+```
 
-## Adding a feature (spec-driven development)
+The app runs at http://localhost:3000.
 
-When adding a feature with an AI agent, follow the spec layout, invoke the skills explicitly, and use the process below.
+## Checks
 
-### Spec layout
+```bash
+npm test
+npm run test:e2e
+npm run lint
+npm run build
+npm run storybook
+```
 
-- `specs/spec_template.md` — starting headings for a new spec
-- `specs/NNN-kebab-slug/` — one folder per spec
-  - `spec.md` — what to build and constraints (Context, Goals, Requirements, Out of scope)
-  - `plan.md` — how to build (files, APIs, order); written by **spec-plan**, not by hand during grill
-  - `task.md` — checkable implementer work; written by **spec-plan**, executed by **spec-execute**
-- `.agents/skills/spec-grill-me/`, `spec-plan/`, `spec-execute/` — the SDD skills
+## How it is built
 
-New folder names use the next unused 3-digit prefix, then a kebab-case slug (`NNN-kebab-slug`).
+Each feature went through a spec in `specs/`:
 
-### Skills
+| Spec | What it added |
+| --- | --- |
+| `010-found-item-backend` | `FoundItem` model, migration, four Server Actions, action tests |
+| `011-found-item-components` | StatusBadge, FoundItemForm, FoundItemCard, FoundItemList |
+| `012-lost-found-page` | `/` wired to the database, LostFoundPage, e2e test |
+| `013-filter-search` | FilterBar, client-side filtering and search, counter |
+| `014-polish` | App name, metadata, card grid, muted claimed cards |
 
-Each skill must be invoked explicitly:
+## Architecture
 
-`/spec-grill-me @specs/NNN-slug/spec.md`
+- `src/app/page.tsx` is a Server Component. It loads the items and passes the
+  Server Actions down as props.
+- `src/components/pages/LostFoundPage` is the only stateful component. It never
+  imports Prisma or the actions.
+- Components follow Atomic Design under `src/components/{atoms,molecules,organisms,templates,pages}`,
+  each with a `.tsx`, a `.stories.tsx` and a `.test.tsx`.
 
-`/spec-plan @specs/NNN-slug/spec.md`
-
-`/spec-execute @specs/NNN-slug/task.md`
-
-- **spec-grill-me** — questions in rounds, then updates `spec.md` in place until Requirements and Out of scope are implementable. Does not implement. Does not create `plan.md` or `task.md`.
-- **spec-plan** — reads an implementable `spec.md` and writes colocated `plan.md` and `task.md`. Does not implement. Does not edit the spec. If those files already exist, ask before overwriting.
-- **spec-execute** — implements remaining unchecked items in `task.md` in order (including Verify) and marks them `[x]` as it goes. Does not rewrite spec, plan, or tasks (except checkboxes).
-
-If `spec.md` is still too vague, **spec-plan** should stop and tell you to run **spec-grill-me** first. If `task.md` is missing or too vague, **spec-execute** should stop and tell you to run **spec-plan** first.
-
-### Add-a-feature process
-
-Always this order; do not skip **spec-grill-me**.
-
-1. Copy `specs/spec_template.md` to `specs/NNN-kebab-slug/spec.md` and draft the headings (can be rough).
-2. Run **spec-grill-me** on that spec until Requirements and Out of scope are specific enough to implement without guessing (or stop is prompted).
-3. Run **spec-plan** on that spec → `plan.md` and `task.md`.
-4. Run **spec-execute** on that spec’s `task.md` → implement remaining tasks, including Verify.
-5. Encode only **durable** conventions in `AGENTS.md` (leave the Next.js block at the bottom unchanged). Do not dump the whole spec into `AGENTS.md`.
-
-One skill at a time. Do not hand-write `plan.md` / `task.md` instead of **spec-plan**.
+See `AGENTS.md` for the full conventions.

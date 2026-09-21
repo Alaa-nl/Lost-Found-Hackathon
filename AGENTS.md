@@ -1,6 +1,7 @@
 # Agent conventions
 
-This repo is a Next.js App Router app. Today `/` is a single-user todo list (`Todoish`).
+This repo is a Next.js App Router app. Today `/` is a hotel Lost & Found list.
+The original Todoish code is still present as a reference example.
 
 Stack that differs from older training data: Next 16, React 19, Prisma 7 (SQLite; generated client in `src/generated/prisma`), Tailwind 4, Storybook 10, Vitest browser + Playwright.
 
@@ -142,6 +143,30 @@ Todo: prepend on create; coerce `createdAt`.
 
 - Component tests/stories mock action props on the page component only (`fn()` / `vi.fn()`). Lower layers use sync spies; do not add persistence mocks there.
 - Playwright e2e uses `prisma/dev.db`. Isolate with unique data (e.g. timestamped titles). Do not assume an empty list and do not wipe the DB.
+
+# Lost & Found
+
+The app at `/` logs items guests leave behind. Conventions that differ from, or
+add to, the Todo example:
+
+- Node 24 (`.nvmrc`). Prisma 7 rejects Node 23, and `better-sqlite3` is a native
+  module, so the dev server and the tests must run on the same major version.
+- `FoundItem.status` is a plain `String` column. TypeScript narrows it to
+  `"waiting" | "claimed"`; `setFoundItemStatus` also guards at runtime, because
+  the union only holds at compile time.
+- `claimedAt` is set when an item is claimed and cleared when it goes back to
+  waiting. Coerce both `createdAt` and `claimedAt` to `Date` in the client page.
+- Claim status updates the row in place (`map`). The list stays sorted by date
+  found, so a card never jumps while someone is clicking it.
+- Molecules `catch` a failed callback and keep their own UI. The page owns the
+  `role="alert"` message and rethrows; without the `catch` the rejection escapes
+  the React event handler.
+- Filtering and search live in `LostFoundPage` state. No new actions, no query
+  params. The counter always reports totals for every item, not the filtered view.
+- `FoundItemList` takes `emptyText`, because only the page knows whether an
+  empty list means "nothing logged yet" or "nothing matches the filter".
+- Dates render as `21 Sep 2026`. `en-GB` renders September as "Sept", so
+  `formatDate` trims the month to three letters via `formatToParts`.
 
 <!-- BEGIN:nextjs-agent-rules -->
 
