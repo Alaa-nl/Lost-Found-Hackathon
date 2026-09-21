@@ -3,6 +3,7 @@ import { prisma } from "@/prisma/prismaClient";
 
 beforeEach(async () => {
   await prisma.todo.deleteMany();
+  await prisma.foundItem.deleteMany();
 });
 
 afterAll(async () => {

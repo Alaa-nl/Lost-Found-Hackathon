@@ -12,3 +12,14 @@ model Todo {
   title String
   description String?
 }
+
+model FoundItem {
+  id         Int       @id @default(autoincrement())
+  createdAt  DateTime  @default(now())
+  name       String
+  location   String
+  roomNumber String?
+  notes      String?
+  status     String    @default("waiting") // "waiting" | "claimed"
+  claimedAt  DateTime?
+}
