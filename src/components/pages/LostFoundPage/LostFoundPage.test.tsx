@@ -14,6 +14,17 @@ const waitingItem: FoundItem = {
   claimedAt: null,
 };
 
+const claimedItem: FoundItem = {
+  id: 2,
+  createdAt: new Date("2026-09-20T10:00:00.000Z"),
+  name: "Blue umbrella",
+  location: "Bar",
+  roomNumber: null,
+  notes: null,
+  status: "claimed",
+  claimedAt: new Date("2026-09-21T09:00:00.000Z"),
+};
+
 function renderPage(overrides: Partial<{
   createFoundItem: () => Promise<FoundItem>;
   setFoundItemStatus: () => Promise<FoundItem>;
@@ -74,5 +85,81 @@ test("a failed action shows a generic alert and keeps the list", async () => {
   await expect.element(alert).not.toHaveTextContent("db is on fire");
   await expect
     .element(screen.getByRole("heading", { name: "Black iPhone" }))
+    .toBeVisible();
+});
+
+test("counts every item regardless of the active filter", async () => {
+  const screen = await render(
+    <LostFoundPage
+      initialItems={[waitingItem, claimedItem]}
+      createFoundItem={vi.fn()}
+      setFoundItemStatus={vi.fn()}
+      deleteFoundItem={vi.fn()}
+    />,
+  );
+
+  await expect.element(screen.getByText("1 waiting, 1 claimed")).toBeVisible();
+});
+
+test("the status tabs narrow the list", async () => {
+  const screen = await render(
+    <LostFoundPage
+      initialItems={[waitingItem, claimedItem]}
+      createFoundItem={vi.fn()}
+      setFoundItemStatus={vi.fn()}
+      deleteFoundItem={vi.fn()}
+    />,
+  );
+
+  await screen.getByRole("tab", { name: "Claimed" }).click();
+
+  await expect
+    .element(screen.getByRole("heading", { name: "Blue umbrella" }))
+    .toBeVisible();
+  await expect
+    .element(screen.getByRole("heading", { name: "Black iPhone" }))
+    .not.toBeInTheDocument();
+  // The totals still describe the whole list.
+  await expect.element(screen.getByText("1 waiting, 1 claimed")).toBeVisible();
+});
+
+test("search matches the name case-insensitively", async () => {
+  const screen = await render(
+    <LostFoundPage
+      initialItems={[waitingItem, claimedItem]}
+      createFoundItem={vi.fn()}
+      setFoundItemStatus={vi.fn()}
+      deleteFoundItem={vi.fn()}
+    />,
+  );
+
+  await screen
+    .getByRole("searchbox", { name: "Search by name" })
+    .fill("  IPHONE  ");
+
+  await expect
+    .element(screen.getByRole("heading", { name: "Black iPhone" }))
+    .toBeVisible();
+  await expect
+    .element(screen.getByRole("heading", { name: "Blue umbrella" }))
+    .not.toBeInTheDocument();
+});
+
+test("a filter with no matches explains itself", async () => {
+  const screen = await render(
+    <LostFoundPage
+      initialItems={[waitingItem, claimedItem]}
+      createFoundItem={vi.fn()}
+      setFoundItemStatus={vi.fn()}
+      deleteFoundItem={vi.fn()}
+    />,
+  );
+
+  await screen
+    .getByRole("searchbox", { name: "Search by name" })
+    .fill("nothing matches this");
+
+  await expect
+    .element(screen.getByText("No items match your filter"))
     .toBeVisible();
 });

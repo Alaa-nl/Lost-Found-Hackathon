@@ -7,6 +7,8 @@ import { type FoundItem } from "@/generated/prisma/browser";
 
 export type FoundItemListProps = {
   items: FoundItem[];
+  /** Shown when there is nothing to list. The page knows whether a filter is on. */
+  emptyText?: string;
   onAdd: (item: {
     name: string;
     location: string;
@@ -22,6 +24,7 @@ export type FoundItemListProps = {
 
 const FoundItemList = function FoundItemList({
   items,
+  emptyText = "No items yet",
   onAdd,
   onSetStatus,
   onDelete,
@@ -29,7 +32,7 @@ const FoundItemList = function FoundItemList({
   return (
     <div className="flex min-w-80 flex-col gap-6">
       <FoundItemForm onAdd={onAdd} />
-      {items.length === 0 ? <p>No items yet</p> : null}
+      {items.length === 0 ? <p>{emptyText}</p> : null}
       <ul className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {items.map((item) => (
           <li key={item.id}>

@@ -4,6 +4,10 @@
 
 import { useState } from "react";
 import { type FoundItemStatus } from "@/components/atoms/StatusBadge/StatusBadge";
+import {
+  FilterBar,
+  type StatusFilter,
+} from "@/components/molecules/FilterBar/FilterBar";
 import { FoundItemList } from "@/components/organisms/FoundItemList/FoundItemList";
 import { PageTemplate } from "@/components/templates/PageTemplate/PageTemplate";
 import { type FoundItem } from "@/generated/prisma/browser";
@@ -50,6 +54,8 @@ const LostFoundPage = function LostFoundPage({
     (initialItems ?? []).map(toClientItem),
   );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [search, setSearch] = useState("");
 
   async function onAdd(input: {
     name: string;
@@ -98,16 +104,47 @@ const LostFoundPage = function LostFoundPage({
     }
   }
 
+  // The counter always describes every item, not the filtered view: reception
+  // wants the real totals even while looking at one status.
+  const waitingCount = items.filter((item) => item.status !== "claimed").length;
+  const claimedCount = items.length - waitingCount;
+
+  const query = search.trim().toLowerCase();
+  const visibleItems = items.filter((item) => {
+    const itemStatus = item.status === "claimed" ? "claimed" : "waiting";
+    const matchesStatus =
+      statusFilter === "all" || itemStatus === statusFilter;
+    const matchesSearch =
+      query === "" || item.name.toLowerCase().includes(query);
+    return matchesStatus && matchesSearch;
+  });
+
+  // Tell the two empty states apart: nothing logged yet vs nothing matching.
+  const isFiltered = statusFilter !== "all" || query !== "";
+
   return (
     <PageTemplate>
-      <div className="mx-auto w-full max-w-4xl">
+      <div className="mx-auto flex w-full max-w-4xl flex-col gap-4">
         {errorMessage ? (
-          <p className="mb-4 text-red-600" role="alert">
+          <p className="text-red-600" role="alert">
             {errorMessage}
           </p>
         ) : null}
+
+        <p className="text-sm text-zinc-600">
+          {waitingCount} waiting, {claimedCount} claimed
+        </p>
+
+        <FilterBar
+          status={statusFilter}
+          search={search}
+          onStatusChange={setStatusFilter}
+          onSearchChange={setSearch}
+        />
+
         <FoundItemList
-          items={items}
+          items={visibleItems}
+          emptyText={isFiltered ? "No items match your filter" : "No items yet"}
           onAdd={onAdd}
           onSetStatus={onSetStatus}
           onDelete={onDelete}

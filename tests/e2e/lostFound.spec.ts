@@ -25,6 +25,21 @@ test("found item add, claim, and delete persist across reloads", async ({
   await page.goto("/");
   await expect(card.getByText("Claimed", { exact: true })).toBeVisible();
 
+  // Search narrows to this item only, then the Waiting tab hides it again
+  // because it is already claimed.
+  const search = page.getByRole("searchbox", { name: "Search by name" });
+  await search.fill(name);
+  await expect(card).toBeVisible();
+
+  await page.getByRole("tab", { name: "Waiting" }).click();
+  await expect(page.getByText("No items match your filter")).toBeVisible();
+
+  await page.getByRole("tab", { name: "Claimed" }).click();
+  await expect(card).toBeVisible();
+
+  await search.fill("");
+  await page.getByRole("tab", { name: "All" }).click();
+
   await card.getByRole("button", { name: "Delete" }).click();
   await expect(card).toHaveCount(0);
 
