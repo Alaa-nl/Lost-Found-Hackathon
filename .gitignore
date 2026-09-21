@@ -55,3 +55,6 @@ storybook-static
 
 # Prisma generated client (run npm run prisma:generate)
 /src/generated/
+
+# Vitest browser failure screenshots
+__screenshots__/
