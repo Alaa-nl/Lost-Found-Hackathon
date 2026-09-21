@@ -3,15 +3,15 @@
 A small web app for a hotel reception: staff log items guests leave behind and
 mark them as claimed when the owner picks them up.
 
-Built on the Todoish course sample (Next.js App Router, React 19, Prisma 7 on
-SQLite, Tailwind 4, Storybook 10, Vitest, Playwright).
+Next.js App Router, React 19, Prisma 7 on SQLite, Tailwind 4, Storybook 10,
+Vitest and Playwright. Started from the Todoish course sample.
 
 ## Features
 
 - Add a found item: name, where it was found, optional room number and notes.
 - See all items as cards, newest first, with a status badge
   (orange = Waiting, green = Claimed).
-- Mark an item claimed and undo it. The card shows the claim date.
+- Mark an item claimed. The card shows the claim date and the button goes away.
 - Delete an item.
 - Filter by status (All / Waiting / Claimed) and search by name.
 - A counter at the top, for example "3 waiting, 1 claimed".
@@ -58,6 +58,7 @@ Each feature went through a spec in `specs/`:
 | `012-lost-found-page` | `/` wired to the database, LostFoundPage, e2e test |
 | `013-filter-search` | FilterBar, client-side filtering and search, counter |
 | `014-polish` | App name, metadata, card grid, muted claimed cards |
+| `015-remove-todo` | Removed the Todo sample, clearer form, one-way claiming |
 
 ## Architecture
 

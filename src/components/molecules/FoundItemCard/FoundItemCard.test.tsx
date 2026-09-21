@@ -48,8 +48,7 @@ test("Mark claimed asks for the claimed status", async () => {
   expect(onSetStatus).toHaveBeenCalledWith({ id: 1, status: "claimed" });
 });
 
-test("a claimed item shows Undo and the claimed date", async () => {
-  const onSetStatus = vi.fn();
+test("a claimed item shows the claimed date and no status button", async () => {
   const screen = await render(
     <FoundItemCard
       item={{
@@ -57,7 +56,7 @@ test("a claimed item shows Undo and the claimed date", async () => {
         status: "claimed",
         claimedAt: new Date("2026-09-22T10:00:00.000Z"),
       }}
-      onSetStatus={onSetStatus}
+      onSetStatus={vi.fn()}
       onDelete={vi.fn()}
     />,
   );
@@ -68,8 +67,13 @@ test("a claimed item shows Undo and the claimed date", async () => {
     .toBeVisible();
   await expect.element(screen.getByText("Claimed on 22 Sep 2026")).toBeVisible();
 
-  await screen.getByRole("button", { name: "Undo" }).click();
-  expect(onSetStatus).toHaveBeenCalledWith({ id: 1, status: "waiting" });
+  // Claiming is one way: there is nothing left to press but Delete.
+  await expect
+    .element(screen.getByRole("button", { name: "Mark claimed" }))
+    .not.toBeInTheDocument();
+  await expect
+    .element(screen.getByRole("button", { name: "Delete" }))
+    .toBeVisible();
 });
 
 test("Delete passes the item id", async () => {

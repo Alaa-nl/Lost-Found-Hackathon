@@ -61,7 +61,9 @@ test("marking claimed swaps the badge using the returned row", async () => {
   await expect
     .element(screen.getByText("Claimed on 22 Sep 2026"))
     .toBeVisible();
-  await expect.element(screen.getByRole("button", { name: "Undo" })).toBeVisible();
+  await expect
+    .element(screen.getByRole("button", { name: "Mark claimed" }))
+    .not.toBeInTheDocument();
 });
 
 test("deleting removes the card from the list", async () => {
@@ -158,6 +160,90 @@ test("a filter with no matches explains itself", async () => {
   await screen
     .getByRole("searchbox", { name: "Search by name" })
     .fill("nothing matches this");
+
+  await expect
+    .element(screen.getByText("No items match your filter"))
+    .toBeVisible();
+});
+
+test("search matches part of a name, not just the start", async () => {
+  const screen = await render(
+    <LostFoundPage
+      initialItems={[waitingItem, claimedItem]}
+      createFoundItem={vi.fn()}
+      setFoundItemStatus={vi.fn()}
+      deleteFoundItem={vi.fn()}
+    />,
+  );
+
+  // "umbrella" sits at the end of "Blue umbrella".
+  await screen.getByRole("searchbox", { name: "Search by name" }).fill("umbrella");
+
+  await expect
+    .element(screen.getByRole("heading", { name: "Blue umbrella" }))
+    .toBeVisible();
+  await expect
+    .element(screen.getByRole("heading", { name: "Black iPhone" }))
+    .not.toBeInTheDocument();
+});
+
+test("search combines with the status tabs", async () => {
+  const screen = await render(
+    <LostFoundPage
+      initialItems={[waitingItem, claimedItem]}
+      createFoundItem={vi.fn()}
+      setFoundItemStatus={vi.fn()}
+      deleteFoundItem={vi.fn()}
+    />,
+  );
+
+  // "Blue umbrella" is claimed, so a Waiting tab plus that search finds nothing.
+  await screen.getByRole("tab", { name: "Waiting" }).click();
+  await screen.getByRole("searchbox", { name: "Search by name" }).fill("umbrella");
+
+  await expect
+    .element(screen.getByText("No items match your filter"))
+    .toBeVisible();
+});
+
+test("clearing the search brings every item back", async () => {
+  const screen = await render(
+    <LostFoundPage
+      initialItems={[waitingItem, claimedItem]}
+      createFoundItem={vi.fn()}
+      setFoundItemStatus={vi.fn()}
+      deleteFoundItem={vi.fn()}
+    />,
+  );
+
+  const search = screen.getByRole("searchbox", { name: "Search by name" });
+  await search.fill("iphone");
+  await expect
+    .element(screen.getByRole("heading", { name: "Blue umbrella" }))
+    .not.toBeInTheDocument();
+
+  await search.fill("");
+
+  await expect
+    .element(screen.getByRole("heading", { name: "Blue umbrella" }))
+    .toBeVisible();
+  await expect
+    .element(screen.getByRole("heading", { name: "Black iPhone" }))
+    .toBeVisible();
+});
+
+test("search does not match the location or notes", async () => {
+  const screen = await render(
+    <LostFoundPage
+      initialItems={[waitingItem, claimedItem]}
+      createFoundItem={vi.fn()}
+      setFoundItemStatus={vi.fn()}
+      deleteFoundItem={vi.fn()}
+    />,
+  );
+
+  // "Lobby" is the location of the iPhone, not part of any name.
+  await screen.getByRole("searchbox", { name: "Search by name" }).fill("Lobby");
 
   await expect
     .element(screen.getByText("No items match your filter"))

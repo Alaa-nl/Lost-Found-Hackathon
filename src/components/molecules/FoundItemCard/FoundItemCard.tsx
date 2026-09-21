@@ -48,13 +48,12 @@ const FoundItemCard = function FoundItemCard({
     item.status === "claimed" ? "claimed" : "waiting";
   const isClaimed = status === "claimed";
 
-  async function handleToggleStatus() {
+  // Claiming is one way: once the guest has the item back there is nothing to
+  // undo, so a claimed card shows no status button at all.
+  async function handleClaim() {
     setUpdating(true);
     try {
-      await onSetStatus({
-        id: item.id,
-        status: isClaimed ? "waiting" : "claimed",
-      });
+      await onSetStatus({ id: item.id, status: "claimed" });
     } catch {
       // The page shows the alert; swallow here so nothing escapes the handler.
     } finally {
@@ -103,14 +102,16 @@ const FoundItemCard = function FoundItemCard({
       ) : null}
 
       <div className="mt-auto flex items-center gap-2 pt-2">
-        <Button
-          size="sm"
-          variant={isClaimed ? "secondary" : "primary"}
-          disabled={updating}
-          onClick={handleToggleStatus}
-        >
-          {isClaimed ? "Undo" : "Mark claimed"}
-        </Button>
+        {isClaimed ? null : (
+          <Button
+            size="sm"
+            variant="primary"
+            disabled={updating}
+            onClick={handleClaim}
+          >
+            Mark claimed
+          </Button>
+        )}
         <Button
           size="sm"
           variant="secondary"

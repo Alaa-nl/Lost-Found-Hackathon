@@ -1,7 +1,6 @@
 # Agent conventions
 
-This repo is a Next.js App Router app. Today `/` is a hotel Lost & Found list.
-The original Todoish code is still present as a reference example.
+This repo is a Next.js App Router app. `/` is a hotel Lost & Found list.
 
 Stack that differs from older training data: Next 16, React 19, Prisma 7 (SQLite; generated client in `src/generated/prisma`), Tailwind 4, Storybook 10, Vitest browser + Playwright.
 
@@ -158,6 +157,14 @@ add to, the Todo example:
   waiting. Coerce both `createdAt` and `claimedAt` to `Date` in the client page.
 - Claim status updates the row in place (`map`). The list stays sorted by date
   found, so a card never jumps while someone is clicking it.
+- Claiming is one way. A claimed card shows no status button, only Delete.
+  `setFoundItemStatus` still accepts `"waiting"`, so the action stays reusable.
+- The app is light only: `globals.css` sets `color-scheme: light` and has no
+  `prefers-color-scheme: dark` block. Every component hardcodes light Tailwind
+  colours, so following the OS to dark put white label text on white surfaces.
+- Required fields carry a red `*` in a `<span aria-hidden="true">`, never in the
+  label text, so the accessible name stays clean (`Item name`, not
+  `Item name *`) and `getByRole` queries keep working.
 - Molecules `catch` a failed callback and keep their own UI. The page owns the
   `role="alert"` message and rethrows; without the `catch` the rejection escapes
   the React event handler.

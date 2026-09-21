@@ -52,39 +52,93 @@ const FoundItemForm = function FoundItemForm({ onAdd }: FoundItemFormProps) {
   }
 
   return (
-    <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
-      <label className="text-sm font-medium" htmlFor="found-item-form-name">
-        Item name
-      </label>
-      <Input
-        id="found-item-form-name"
-        value={name}
-        onChange={(event) => setName(event.target.value)}
-      />
-      <label className="text-sm font-medium" htmlFor="found-item-form-location">
-        Found at
-      </label>
-      <Input
-        id="found-item-form-location"
-        value={location}
-        onChange={(event) => setLocation(event.target.value)}
-      />
-      <label className="text-sm font-medium" htmlFor="found-item-form-room">
-        Room number
-      </label>
-      <Input
-        id="found-item-form-room"
-        value={roomNumber}
-        onChange={(event) => setRoomNumber(event.target.value)}
-      />
-      <label className="text-sm font-medium" htmlFor="found-item-form-notes">
-        Notes
-      </label>
-      <Textarea
-        id="found-item-form-notes"
-        value={notes}
-        onChange={(event) => setNotes(event.target.value)}
-      />
+    <form
+      className="flex flex-col gap-4 border border-zinc-200 bg-white p-4"
+      onSubmit={handleSubmit}
+    >
+      <div>
+        <h2 className="font-semibold text-black">Log a found item</h2>
+        <p className="text-sm text-zinc-500">
+          Fields marked * are required.
+        </p>
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <label
+          className="text-sm font-medium text-black"
+          htmlFor="found-item-form-name"
+        >
+          Item name{" "}
+          <span aria-hidden="true" className="text-red-600">
+            *
+          </span>
+        </label>
+        <Input
+          id="found-item-form-name"
+          placeholder="Black iPhone"
+          required
+          value={name}
+          onChange={(event) => setName(event.target.value)}
+        />
+        <p className="text-xs text-zinc-500">What the item is.</p>
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <label
+          className="text-sm font-medium text-black"
+          htmlFor="found-item-form-location"
+        >
+          Found at{" "}
+          <span aria-hidden="true" className="text-red-600">
+            *
+          </span>
+        </label>
+        <Input
+          id="found-item-form-location"
+          placeholder="Lobby"
+          required
+          value={location}
+          onChange={(event) => setLocation(event.target.value)}
+        />
+        <p className="text-xs text-zinc-500">Where in the hotel it was found.</p>
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <label
+          className="text-sm font-medium text-black"
+          htmlFor="found-item-form-room"
+        >
+          Room number
+        </label>
+        <Input
+          id="found-item-form-room"
+          placeholder="204"
+          value={roomNumber}
+          onChange={(event) => setRoomNumber(event.target.value)}
+        />
+        <p className="text-xs text-zinc-500">
+          The guest room, if you know it.
+        </p>
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <label
+          className="text-sm font-medium text-black"
+          htmlFor="found-item-form-notes"
+        >
+          Notes
+        </label>
+        <Textarea
+          id="found-item-form-notes"
+          placeholder="Cracked screen, in a red case"
+          value={notes}
+          onChange={(event) => setNotes(event.target.value)}
+        />
+        <p className="text-xs text-zinc-500">
+          Anything that helps identify it.
+        </p>
+      </div>
+
       <Button type="submit" variant="primary" disabled={!canSubmit || adding}>
         Add
       </Button>

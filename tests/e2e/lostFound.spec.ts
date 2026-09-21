@@ -21,6 +21,8 @@ test("found item add, claim, and delete persist across reloads", async ({
 
   await card.getByRole("button", { name: "Mark claimed" }).click();
   await expect(card.getByText("Claimed", { exact: true })).toBeVisible();
+  // Claiming is one way: the status button is gone afterwards.
+  await expect(card.getByRole("button", { name: "Mark claimed" })).toHaveCount(0);
 
   await page.goto("/");
   await expect(card.getByText("Claimed", { exact: true })).toBeVisible();

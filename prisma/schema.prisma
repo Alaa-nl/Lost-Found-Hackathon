@@ -6,13 +6,6 @@ generator client {
   output   = "../src/generated/prisma"
 }
 
-model Todo {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  title String
-  description String?
-}
-
 model FoundItem {
   id         Int       @id @default(autoincrement())
   createdAt  DateTime  @default(now())

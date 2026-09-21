@@ -2,7 +2,6 @@ import { afterAll, beforeEach } from "vitest";
 import { prisma } from "@/prisma/prismaClient";
 
 beforeEach(async () => {
-  await prisma.todo.deleteMany();
   await prisma.foundItem.deleteMany();
 });
 
